@@ -2,6 +2,7 @@
 import numpy as np
 import cvxpy as cp
 from genetic_algorithm import solve_singleplayer_lp_genetic
+from simulated_annealing import solve_singleplayer_sim_anneal
 
 def cvxpy_solve(instance):
     R, A, b = instance
@@ -63,4 +64,18 @@ if __name__ == '__main__':
     else:
         print("found no solution...")
     
+    # =================
+
+    # =================
+    # simulated annealing
+    # =================
+    
+    solution_sim_anneal = solve_singleplayer_sim_anneal(inst, init_temp=8000, max_iter=2000)
+
+    print("\nSimulated Annealing Solution\n")
+    for i,x in enumerate(solution_sim_anneal):
+        if x:
+            print("Used:", convs[i])
+    print("Score:",np.dot(solution_sim_anneal, inst[0]))
+        
     # =================
