@@ -14,8 +14,7 @@ def cvxpy_solve(instance):
 
     problem.solve(solver=cp.GLPK_MI)
     # According to wikipedia, the GNU linear programming kit
-    # uses Gomory's mixed integer cuts plus branch and bound.
-
+    # uses Gomory's mixed integer cuts method plus branch and bound.
     return x.value
 
 
@@ -24,7 +23,7 @@ if __name__ == '__main__':
     import singleplayer_lp
     import converters
     convs = instance_gen.gen_converters(7,7,7)
-    ress = instance_gen.gen_resources(10)
+    ress = instance_gen.gen_resources(5)
 
     inst = singleplayer_lp.gen_instance(convs,ress)
     

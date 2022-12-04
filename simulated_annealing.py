@@ -3,9 +3,14 @@ import math
 import numpy as np
 
 # Get neighbor of current solution (X) by changing one variable assignment (0 -> 1 or vice versa)
-def get_solution_neighbor(X):
+def get_01solution_neighbor(X):
     index_to_flip = random.randint(0, len(X)-1)
     X[index_to_flip] = 1 - X[index_to_flip]
+    return X
+
+def get_int_solution_neighbor(X):
+    index_to_flip = random.randint(0, len(X)-1)
+    X[index_to_flip] += random.choice([-1,1])
     return X
 
 def is_solution_feasible(X, machine_usage, resources):
@@ -14,17 +19,20 @@ def is_solution_feasible(X, machine_usage, resources):
 def get_score(X, rewards):
     return np.dot(X, rewards)
 
-def solve_singleplayer_sim_anneal(instance, init_temp, max_iter):
+def solve_sim_anneal(instance, init_temp, max_iter, get_neighbor,  X_start = None):
     # Simulated annealing algorithm adapted from K&W Chapter 8.3 (pg. 130) - Algorithm 8.4
     rewards, machine_usage, resources = instance
 
     iter_count = 0
     temp = init_temp
-    X, score = np.zeros(len(rewards)), 0
+    if X_start is None:
+        X, score = np.zeros(len(rewards)), 0
+    else:
+        X,score = X_start, get_score(X_start,rewards)
     best_X, best_score = X, score
 
     while iter_count < max_iter:
-        new_X = get_solution_neighbor(X.copy())
+        new_X = get_neighbor(X.copy())
         # continue process only if the neighbor solution is feasible; otherwise continue with iterations
         if is_solution_feasible(new_X, machine_usage, resources):
             # get difference between old/new scores
@@ -41,3 +49,9 @@ def solve_singleplayer_sim_anneal(instance, init_temp, max_iter):
         temp = init_temp / (iter_count + 1)
 
     return best_X
+
+def solve_singleplayer_sim_anneal(instance, init_temp=8000, max_iter=2000):
+    return solve_sim_anneal(instance, init_temp, max_iter, get_01solution_neighbor)
+
+def solve_multiplayer_sim_anneal(instance, X_start, init_temp=8000, max_iter=2000):
+    return solve_sim_anneal(instance, init_temp, max_iter, get_int_solution_neighbor, X_start)

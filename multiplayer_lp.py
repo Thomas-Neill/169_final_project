@@ -2,6 +2,7 @@ import numpy as np
 import converters
 import solve_lp
 import singleplayer_lp
+from simulated_annealing import *
 
 def singleplayer_opt(player):
     inst = singleplayer_lp.gen_instance(*player)
@@ -10,8 +11,7 @@ def singleplayer_opt(player):
 
 # list of tuples: (Convs_p1, Resources_p1)
 # output: variable labels:
-def gen_instance(players):
-    #TODO MAKE THIS AN IPYNB???
+def gen_instance(players, max_trade = 0):
     # variables:
     # u_{p,m}: usage by player p of machine m
     # t_{p1, p2, r}: trade from player p1 to player p2 of resource r
@@ -63,7 +63,7 @@ def gen_instance(players):
 
     constraint5 = [[-1 if v == v0 else 0 for v in variables] for v0 in variables if len(v0) == 3]
 
-    limit5 = [1 for v0 in variables if len(v0) == 3]
+    limit5 = [max_trade for v0 in variables if len(v0) == 3]
 
     constraint6 = [[1 if v == v0 else 0 for v in variables] for v0 in variables if len(v0) == 3]
 
@@ -75,30 +75,36 @@ def gen_instance(players):
 
 if __name__ == '__main__':
     import instance_gen
-    Np = 4
-    convs = sorted(set(instance_gen.gen_converters(7,7,7)))
+    Np = 2
     players = [
-        (convs,
+        (sorted(set(instance_gen.gen_converters(4,4,4))),
          instance_gen.gen_resources(10)) for i in range(Np)]
     (vars,inst) = gen_instance(players)
 
     soln = solve_lp.cvxpy_solve(inst)
 
     print(soln)
+    scores0 = []
     for i,p in enumerate(players):
         p1s = solve_lp.cvxpy_solve(singleplayer_lp.gen_instance(*p))
-    
-        print("player",i,"before:", singleplayer_opt(p), p[1])
-        for i,x in enumerate(p1s):
+        '''for i,x in enumerate(p1s):
             if x:
-                print("Used:", convs[i],x)
+                print("Used:", convs[i],x)'''
+        scores0.append(singleplayer_opt(p))
+
+    (vars, inst2) = gen_instance(players, 100)
+
+    soln2 = solve_multiplayer_sim_anneal(inst2, soln, 8000, 2000)
+
 
     scores = [0] * Np
-    for x,v in zip(soln,vars):
+    for x,v in zip(soln2,vars):
         if len(v) == 2 and x > 0:
-            print(v, x)
+            #print(v, x)
             scores[v[0]] += v[1].output*x
-    
+        #if len(v) == 3 and x > 0:
+        #    print("!!!")
+    print(scores0, sum(scores0))
     print(scores, sum(scores))
     
 
