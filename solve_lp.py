@@ -41,14 +41,14 @@ if __name__ == '__main__':
     # genetic algorithm
     # =================
     
-    solution = solve_singleplayer_lp_genetic(
+    print("\nGenetic Algorithm Solution\n")
+    solution, statistics = solve_singleplayer_lp_genetic(
         inst, 
         max_population_size=100, 
         keep_top_k=20,
         max_iters=1000,
         mutation_rate=1 / len(convs)
     )
-    print("\nGenetic Algorithm Solution\n")
     if solution is not None:
         # debug prints
         print(f"resources: {converters.resource_types}")

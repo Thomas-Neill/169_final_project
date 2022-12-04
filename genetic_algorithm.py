@@ -1,6 +1,7 @@
 import typing
 import random
 import numpy as np
+import time
 
 class Genome:
     __genes: typing.List[int]
@@ -95,9 +96,15 @@ def mutate(children: typing.List[Genome], mutation_rate: float) -> typing.List[G
 
 def solve_singleplayer_lp_genetic(instance, max_population_size: int, keep_top_k: int, max_iters: int, mutation_rate: float): #-> np.ndarray[float]
     """genetic algorithm solver for the single player lp. Algorithm adapted from K&W Algorithm 9.4."""
+    
+    # dictionary to hold statistics of optimization run
+    statistics: typing.Dict[str, typing.Union[int, float]] = {}
+    
+    start_time = time.time()
     rewards, machine_usage, resources = instance
     # create an initial population
     population = [Genome(genome_size=machine_usage.shape[1]) for _ in range(max_population_size)]
+    iters = 0
     for i in range(max_iters):
         # select parents
         parents = selection(
@@ -111,7 +118,15 @@ def solve_singleplayer_lp_genetic(instance, max_population_size: int, keep_top_k
         children = crossover(parents=parents, population_size=max_population_size)
         # mutate
         population = mutate(children, mutation_rate=mutation_rate)
-    print(f"finished {max_iters} iterations")
+        
+        iters = i
     
     best: Genome = sorted(population, key=lambda x: x.compute_score(rewards, machine_usage, resources), reverse=True)[0]
-    return best.get_usage_from_genes() if best.compute_score(rewards, machine_usage, resources) > 0 else None
+    elapsed_time = time.time() - elapsed_time
+    
+    statistics = { 
+        "elapsed_time": elapsed_time, 
+        "iterations": iters
+    }
+    
+    return best.get_usage_from_genes() if best.compute_score(rewards, machine_usage, resources) > 0 else None, statistics
