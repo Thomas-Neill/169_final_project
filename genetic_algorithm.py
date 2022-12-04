@@ -105,7 +105,9 @@ def solve_singleplayer_lp_genetic(instance, max_population_size: int, keep_top_k
     # create an initial population
     population = [Genome(genome_size=machine_usage.shape[1]) for _ in range(max_population_size)]
     iters = 0
-    for i in range(max_iters):
+    prev_mean_score = 0
+    convergence = 0
+    for i in range(1, max_iters+1):
         # select parents
         parents = selection(
             population, 
@@ -118,15 +120,19 @@ def solve_singleplayer_lp_genetic(instance, max_population_size: int, keep_top_k
         children = crossover(parents=parents, population_size=max_population_size)
         # mutate
         population = mutate(children, mutation_rate=mutation_rate)
-        
+        # track statistics
         iters = i
+        mean_score = sum([x.compute_score(rewards, machine_usage, resources) for x in population]) / len(population)
+        convergence = abs(mean_score - prev_mean_score)
+        prev_mean_score = mean_score
     
     best: Genome = sorted(population, key=lambda x: x.compute_score(rewards, machine_usage, resources), reverse=True)[0]
-    elapsed_time = time.time() - elapsed_time
+    elapsed_time = time.time() - start_time
     
     statistics = { 
         "elapsed_time": elapsed_time, 
-        "iterations": iters
+        "iterations": iters,
+        "convergence": convergence
     }
     
     return best.get_usage_from_genes() if best.compute_score(rewards, machine_usage, resources) > 0 else None, statistics

@@ -61,6 +61,10 @@ if __name__ == '__main__':
             if x:
                 print("Used:", convs[i])
         print("Score:",np.dot(solution, inst[0]))
+        
+        print("\nStatistics")
+        for k,v in statistics.items():
+            print(f"  {k}: {v}")
     else:
         print("found no solution...")
     
