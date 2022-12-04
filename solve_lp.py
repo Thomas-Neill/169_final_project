@@ -1,7 +1,7 @@
 #this module contains various approximate integer LP solvers.
 import numpy as np
 import cvxpy as cp
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt 
 from genetic_algorithm import solve_singleplayer_lp_genetic
 from simulated_annealing import solve_singleplayer_sim_anneal
 
