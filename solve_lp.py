@@ -1,6 +1,7 @@
 #this module contains various approximate integer LP solvers.
 import numpy as np
 import cvxpy as cp
+import matplotlib.pyplot as plt
 from genetic_algorithm import solve_singleplayer_lp_genetic
 from simulated_annealing import solve_singleplayer_sim_anneal
 
@@ -42,11 +43,13 @@ if __name__ == '__main__':
     # =================
     
     print("\nGenetic Algorithm Solution\n")
+    GA_MAX_ITERS = 1000
+    SHOW_PLOTS = False
     solution, statistics = solve_singleplayer_lp_genetic(
         inst, 
         max_population_size=100, 
         keep_top_k=20,
-        max_iters=1000,
+        max_iters=GA_MAX_ITERS,
         mutation_rate=1 / len(convs)
     )
     if solution is not None:
@@ -64,7 +67,28 @@ if __name__ == '__main__':
         
         print("\nStatistics")
         for k,v in statistics.items():
-            print(f"  {k}: {v}")
+            if type(v) is not list:
+                print(f"  {k}: {v}")
+                
+        if SHOW_PLOTS:
+            plt.subplot(2, 2, 1)
+            # plot convergence over time
+            plt.plot([i for i in range(GA_MAX_ITERS)], statistics["mean_convergence_over_time"])
+            plt.title("mean convergence over time")
+            
+            # plot mean score over time
+            plt.subplot(2, 2, 2)
+            plt.plot([i for i in range(GA_MAX_ITERS)], statistics["mean_score_over_time"])
+            plt.title("mean score over time")
+            
+             # plot best score over time
+            plt.subplot(2, 2, 3)
+            plt.plot([i for i in range(GA_MAX_ITERS)], statistics["best_score_over_time"])
+            plt.title("best score over time")
+            
+            plt.show()
+            
+            
     else:
         print("found no solution...")
     

@@ -94,7 +94,7 @@ def mutate(children: typing.List[Genome], mutation_rate: float) -> typing.List[G
         
     return children
 
-def solve_singleplayer_lp_genetic(instance, max_population_size: int, keep_top_k: int, max_iters: int, mutation_rate: float): #-> np.ndarray[float]
+def __solver(instance, max_population_size: int, keep_top_k: int, max_iters: int, mutation_rate: float):
     """genetic algorithm solver for the single player lp. Algorithm adapted from K&W Algorithm 9.4."""
     
     # dictionary to hold statistics of optimization run
@@ -107,6 +107,9 @@ def solve_singleplayer_lp_genetic(instance, max_population_size: int, keep_top_k
     iters = 0
     prev_mean_score = 0
     convergence = 0
+    convergence_over_iters: typing.List[float] = []
+    mean_scores: typing.List[float] = []
+    best_scores: typing.List[float] = []
     for i in range(1, max_iters+1):
         # select parents
         parents = selection(
@@ -122,8 +125,13 @@ def solve_singleplayer_lp_genetic(instance, max_population_size: int, keep_top_k
         population = mutate(children, mutation_rate=mutation_rate)
         # track statistics
         iters = i
-        mean_score = sum([x.compute_score(rewards, machine_usage, resources) for x in population]) / len(population)
+        
+        scores = [x.compute_score(rewards, machine_usage, resources) for x in population]
+        mean_score = sum(scores) / len(population)
+        best_scores.append(max(scores))
+        mean_scores.append(mean_score)
         convergence = abs(mean_score - prev_mean_score)
+        convergence_over_iters.append(convergence)
         prev_mean_score = mean_score
     
     best: Genome = sorted(population, key=lambda x: x.compute_score(rewards, machine_usage, resources), reverse=True)[0]
@@ -132,7 +140,16 @@ def solve_singleplayer_lp_genetic(instance, max_population_size: int, keep_top_k
     statistics = { 
         "elapsed_time": elapsed_time, 
         "iterations": iters,
-        "convergence": convergence
+        "convergence": convergence,
+        "mean_convergence_over_time": convergence_over_iters,
+        "mean_score_over_time": mean_scores,
+        "best_score_over_time": best_scores
     }
     
     return best.get_usage_from_genes() if best.compute_score(rewards, machine_usage, resources) > 0 else None, statistics
+def solve_singleplayer_lp_genetic(instance, max_population_size: int, keep_top_k: int, max_iters: int, mutation_rate: float): #-> np.ndarray[float]
+    return __solver(instance, max_population_size, keep_top_k, max_iters, mutation_rate)
+
+def solve_multiplayer_lp_genetic(instance, max_population_size: int, keep_top_k: int, max_iters: int, mutation_rate: float): #-> np.ndarray[float]
+    """genetic algorithm solver for the multiplayer lp. Algorithm adapted from K&W Algorithm 9.4."""
+    assert False, "not implemented"
