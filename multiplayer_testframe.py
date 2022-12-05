@@ -10,10 +10,10 @@ N_PLAYERS = 5
 def genetic(inst0, inst2, inst20, X0):
     solution, statistics = solve_multiplayer_lp_genetic(
         inst20,
-        max_population_size=1000,
-        keep_top_k=200,
+        max_population_size=100,
+        keep_top_k=4,
         max_iters=100,
-        mutation_rate=0.005,
+        mutation_rate=0.01,
         starting_solution= X0
     )
     if solution is None:
@@ -24,8 +24,7 @@ def simulated(inst0, inst2, inst20, X0):
     return solve_multiplayer_sim_anneal(inst20, X0, init_temp=8000, max_iter=2000, return_stats=True)
 
 def gnulptk(inst0, inst2, inst20, _ignore):
-    print(len(inst0[0]))
-    if len(inst0[0]) <= 400:
+    if len(inst0[0]) <= 200:
         return cvxpy_solve(inst2)@inst0[0], -1, -1
     # it bricks if there are too many variables - just do a no-trade solve instead.
     return cvxpy_solve(inst0)@inst0[0], -1, -1
