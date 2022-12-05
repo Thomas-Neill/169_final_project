@@ -106,6 +106,7 @@ def __solver(instance, max_population_size: int, keep_top_k: int, max_iters: int
     population = [Genome(genome_size=machine_usage.shape[1]) for _ in range(max_population_size)]
     iters = 0
     prev_mean_score = 0
+    prev_best_score = 0
     convergence = 0
     convergence_over_iters: typing.List[float] = []
     mean_scores: typing.List[float] = []
@@ -127,12 +128,13 @@ def __solver(instance, max_population_size: int, keep_top_k: int, max_iters: int
         iters = i
         
         scores = [x.compute_score(rewards, machine_usage, resources) for x in population]
+        best_score = max(scores)
         mean_score = sum(scores) / len(population)
-        best_scores.append(max(scores))
+        best_scores.append(best_score)
         mean_scores.append(mean_score)
-        convergence = abs(mean_score - prev_mean_score)
+        convergence = abs(best_score - prev_best_score)
         convergence_over_iters.append(convergence)
-        prev_mean_score = mean_score
+        prev_best_score = best_score
     
     best: Genome = sorted(population, key=lambda x: x.compute_score(rewards, machine_usage, resources), reverse=True)[0]
     elapsed_time = time.time() - start_time

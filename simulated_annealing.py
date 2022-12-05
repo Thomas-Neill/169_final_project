@@ -19,7 +19,7 @@ def is_solution_feasible(X, machine_usage, resources):
 def get_score(X, rewards):
     return np.dot(X, rewards)
 
-def solve_sim_anneal(instance, init_temp, max_iter, get_neighbor,  X_start = None):
+def solve_sim_anneal(instance, init_temp, max_iter, get_neighbor,  X_start = None, return_stats=False):
     # Simulated annealing algorithm adapted from K&W Chapter 8.3 (pg. 130) - Algorithm 8.4
     rewards, machine_usage, resources = instance
 
@@ -30,6 +30,7 @@ def solve_sim_anneal(instance, init_temp, max_iter, get_neighbor,  X_start = Non
     else:
         X,score = X_start, get_score(X_start,rewards)
     best_X, best_score = X, score
+    old_best_score = score
 
     while iter_count < max_iter:
         new_X = get_neighbor(X.copy())
@@ -48,10 +49,15 @@ def solve_sim_anneal(instance, init_temp, max_iter, get_neighbor,  X_start = Non
         iter_count += 1
         temp = init_temp / (iter_count + 1)
 
-    return best_X
+        conv = abs(best_score - old_best_score)
+        old_best_score = best_score
+    
+    if not return_stats:
+        return best_X
+    return best_score, conv, iter_count
 
-def solve_singleplayer_sim_anneal(instance, init_temp=8000, max_iter=2000):
-    return solve_sim_anneal(instance, init_temp, max_iter, get_01solution_neighbor)
+def solve_singleplayer_sim_anneal(instance, init_temp=8000, max_iter=2000, return_stats = False):
+    return solve_sim_anneal(instance, init_temp, max_iter, get_01solution_neighbor, return_stats=return_stats)
 
-def solve_multiplayer_sim_anneal(instance, X_start, init_temp=8000, max_iter=2000):
-    return solve_sim_anneal(instance, init_temp, max_iter, get_int_solution_neighbor, X_start)
+def solve_multiplayer_sim_anneal(instance, X_start, init_temp=8000, max_iter=2000, return_stats = False):
+    return solve_sim_anneal(instance, init_temp, max_iter, get_int_solution_neighbor, X_start, return_stats)
