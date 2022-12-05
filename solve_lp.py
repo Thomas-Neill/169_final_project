@@ -3,7 +3,7 @@ import numpy as np
 import cvxpy as cp
 import matplotlib.pyplot as plt 
 from genetic_algorithm import solve_singleplayer_lp_genetic
-from simulated_annealing import solve_singleplayer_sim_anneal
+from simulated_annealing import solve_singleplayer_sim_anneal, solve_multiplayer_sim_anneal
 
 def cvxpy_solve(instance):
     R, A, b = instance
@@ -20,7 +20,7 @@ def cvxpy_solve(instance):
 
 if __name__ == '__main__':
     import instance_gen
-    import singleplayer_lp
+    import singleplayer_lp, multiplayer_lp
     import converters
     convs = instance_gen.gen_converters(4,3,2)
     ress = instance_gen.gen_resources(10)
@@ -83,7 +83,7 @@ if __name__ == '__main__':
              # plot best score over time
             plt.subplot(2, 2, 3)
             plt.plot([i for i in range(GA_MAX_ITERS)], statistics["best_score_over_time"])
-            plt.title("best score over time")
+            plt.title("Best Score Over Time")
             
             plt.show()
             
@@ -107,7 +107,26 @@ if __name__ == '__main__':
 
     if SHOW_PLOTS:
         plt.plot(list(range(len(best_score_over_time_SA))), best_score_over_time_SA)
-        plt.title("best score over time")
+        plt.title("Best score over time")
         plt.show()
         
     # =================
+
+    # =================
+    # one multiplayer simulated annealing solver run
+    # =================
+
+    players = [(instance_gen.gen_converters(4,3,2),instance_gen.gen_resources(10)) for p in range(5)]
+
+    inst0 = multiplayer_lp.gen_instance(players)[1]
+    X0 = cvxpy_solve(inst0)
+    inst20 = multiplayer_lp.gen_instance(players, 20)[1]
+
+    multiplayer_solution_SA, multiplayer_best_score_over_time_SA = solve_multiplayer_sim_anneal(
+        inst20, X0, init_temp=8000, max_iter=2000, return_stats=False
+    )
+    
+    if SHOW_PLOTS:
+        plt.plot(list(range(len(multiplayer_best_score_over_time_SA))), multiplayer_best_score_over_time_SA)
+        plt.title("Best score over time")
+        plt.show()
