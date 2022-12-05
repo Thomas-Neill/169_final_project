@@ -26,7 +26,7 @@ def gen_instance(players, max_trade = 0):
     # (2): u_{p,m} - \sum_{p2} t_{p2, p1, m} <= s_{p1, m}
     #     (no player overuses their machines)
     # (3): \sum_m u_{p,m}*v_m >= indv_p (best individual score for that player)
-    #     (each player gains something from having traded - TODO strengthen?)
+    #     (each player gains something from having traded - this is a weak constraint.)
     # (4): u_{p,m} >= 0
     #     (players use machines a positive number of times.)
 
@@ -57,10 +57,7 @@ def gen_instance(players, max_trade = 0):
 
     limit4 = [0 for v0 in variables if len(v0) == 2]
 
-    # constraint 5: trade is bounded: no trading in infinite loops!
-    # this lets the solver terminate for N = 3, but needless to say, players can 
-    # trade more than 1 resource!
-    # todo fix somehow?
+    # constraint 5: trade is bounded: necessary to make feasible for cvxpy
 
     constraint5 = [[-1 if v == v0 else 0 for v in variables] for v0 in variables if len(v0) == 3]
 
@@ -68,7 +65,7 @@ def gen_instance(players, max_trade = 0):
 
     constraint6 = [[1 if v == v0 else 0 for v in variables] for v0 in variables if len(v0) == 3]
 
-    limit6 = [1 for v0 in variables if len(v0) == 3]
+    limit6 = [max_trade for v0 in variables if len(v0) == 3]
 
     return (variables, (np.array(objective), 
             np.matrix(constraint1 + constraint2 + constraint3 + constraint4 + constraint5 + constraint6), 

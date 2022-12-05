@@ -21,7 +21,7 @@ def simulated(inst0, inst2, inst20, X0):
     return solve_multiplayer_sim_anneal(inst20, X0, init_temp=8000, max_iter=2000, return_stats=True)
 
 def gnulptk(inst0, inst2, inst20, _ignore):
-    print(len(inst0[0]))
+    #print(len(inst0[0]))
     if len(inst0[0]) <= 200:
         return cvxpy_solve(inst2)@inst0[0], -1, -1
     return cvxpy_solve(inst0)@inst0[0], -1, -1
