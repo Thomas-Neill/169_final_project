@@ -73,7 +73,7 @@ def gen_instance(players, max_trade = 0):
 
 if __name__ == '__main__':
     import instance_gen
-    Np = 2
+    Np = 5
     players = [
         (sorted(set(instance_gen.gen_converters(4,4,4))),
          instance_gen.gen_resources(10)) for i in range(Np)]
@@ -106,12 +106,15 @@ if __name__ == '__main__':
     print(scores, sum(scores))
     
     print("\nGenetic Algorithm\n")
+    MAX_POP = 100
+    KEEP = math.floor(MAX_POP * (1/25))
+    MUTATION_RATE = 0.01#1 / (inst2[1].shape[0] * inst2[1].shape[1])
     soln3, _ = genetic_algorithm.solve_multiplayer_lp_genetic(
         inst2,
-        max_population_size=300,
-        keep_top_k=20,
-        max_iters=400,
-        mutation_rate=0.05,
+        max_population_size=MAX_POP,
+        keep_top_k=KEEP,
+        max_iters=100,
+        mutation_rate=MUTATION_RATE,
         starting_solution=soln
     )
     
