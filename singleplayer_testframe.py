@@ -1,5 +1,5 @@
 import time
-N_TESTS = 10
+N_TESTS = 10 
 
 
 solvers = []
