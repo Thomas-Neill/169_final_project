@@ -4,7 +4,7 @@ from genetic_algorithm import *
 from simulated_annealing import *
 from solve_lp import *
 import statistics
-N_TESTS = 10
+N_TESTS = 100
 N_PLAYERS = 5
 
 def genetic(inst0, inst2, inst20, X0):
@@ -21,7 +21,7 @@ def genetic(inst0, inst2, inst20, X0):
     return solution @ inst0[0], statistics["convergence"], statistics["iterations"]
 
 def simulated(inst0, inst2, inst20, X0):
-    return solve_multiplayer_sim_anneal(inst20, X0, init_temp=8000, max_iter=2000, return_stats=True)
+    return solve_multiplayer_sim_anneal(inst20, X0, init_temp=16000, max_iter=4000, return_stats=True)
 
 def gnulptk(inst0, inst2, inst20, _ignore):
     if len(inst0[0]) <= 200:
@@ -42,7 +42,7 @@ for t in range(N_TESTS):
     X0 = cvxpy_solve(inst0)
     base_scores = inst0[0] @ X0
 
-    inst2 = multiplayer_lp.gen_instance(players, 2)[1]
+    inst2 = multiplayer_lp.gen_instance(players, 1)[1]
     inst20 = multiplayer_lp.gen_instance(players, 20)[1]
 
     for solver,solverframe in solvers:
