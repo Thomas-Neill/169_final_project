@@ -43,13 +43,13 @@ if __name__ == '__main__':
     
     print("\nGenetic Algorithm Solution\n")
     GA_MAX_ITERS = 100
-    SHOW_PLOTS = False
+    SHOW_PLOTS = True
     solution, statistics = solve_singleplayer_lp_genetic(
         inst, 
         max_population_size=100, 
         keep_top_k=20,
         max_iters=GA_MAX_ITERS,
-        mutation_rate=0.05#1 / len(convs)
+        mutation_rate=1 / len(convs)
     )
     if solution is not None:
         # debug prints

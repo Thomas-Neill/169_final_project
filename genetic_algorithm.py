@@ -48,6 +48,11 @@ class Genome:
         if self.__is_binary:
             self.__genes[index] = 1 - self.__genes[index]
         else:
+            '''num_bits = 4
+            random_bit_index = random.randint(0, num_bits - 1)
+            bit_mask = (0b1 << random_bit_index)
+            flipped = (~int(self.__genes[index]) & bit_mask)
+            self.__genes[index] = (int(self.__genes[index]) & (~bit_mask)) | flipped'''
             self.__genes[index] += random.randint(-1, 1)
 
     def __len__(self) -> int:
@@ -79,7 +84,7 @@ def two_point_crossover(parent1: Genome, parent2: Genome) -> Genome:
     child_genes: typing.List[int] = parent1.get_genes()[:point1] + parent2.get_genes()[point1:point2] + parent1.get_genes()[point2:]
     return Genome(genome_size=genome_size, genes=child_genes, is_binary=parent1._Genome__is_binary)
 
-def crossover(parents: typing.List[typing.Tuple[Genome, Genome]], population_size: int) -> typing.List[Genome]:
+def crossover(parents: typing.List[typing.Tuple[Genome, Genome]], population_size: int, starting_solution = None) -> typing.List[Genome]:
     """Creates a new population using crossover of selected parents."""
     children: typing.List[Genome] = []
     # create child from each of the parentss
@@ -88,10 +93,20 @@ def crossover(parents: typing.List[typing.Tuple[Genome, Genome]], population_siz
     
     # more children if population is too small
     while len(children) < population_size:
-        random_parent_ind = random.randint(0, len(parents)-1)
-        p1, p2 = parents[random_parent_ind]
-        children.append(two_point_crossover(p1, p2))
-    
+        if random.random() < 0.9:
+            random_parent_ind = random.randint(0, len(parents)-1)
+            p1, p2 = parents[random_parent_ind]
+            children.append(two_point_crossover(p1, p2))
+        else:
+            model: Genome = parents[0][0]
+            genome_size = len(model)
+            if starting_solution is None:
+                children.append(Genome(genome_size=genome_size))
+            else:
+                genes: typing.List[int] = [v for v in starting_solution]
+                genes += [random.randint(-1, 1) for _ in range(genome_size - len(starting_solution))]
+                children.append(Genome(genome_size=genome_size, genes=genes, is_binary=model._Genome__is_binary))
+            
     return children
 
 def mutate(children: typing.List[Genome], mutation_rate: float) -> typing.List[Genome]:
@@ -143,11 +158,12 @@ def __solver(
             keep_top_k=keep_top_k
         )
         # crossover
-        children = crossover(parents=parents, population_size=max_population_size)
+        children = crossover(parents=parents, population_size=max_population_size, starting_solution=starting_solutions)
         # mutate
         population = mutate(children, mutation_rate=mutation_rate)
         
-        '''if i % 20 == 0:
+        '''if i % 5 == 0:
+            print(f"iteration {i}:")
             pop_sorted = sorted(population, key=lambda x: x.compute_score(rewards, machine_usage, resources), reverse=True)
             print([p.compute_score(rewards, machine_usage, resources) for p in pop_sorted])'''
         # track statistics
