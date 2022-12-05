@@ -147,8 +147,9 @@ def __solver(
         # mutate
         population = mutate(children, mutation_rate=mutation_rate)
         
-        #pop_sorted = sorted(population, key=lambda x: x.compute_score(rewards, machine_usage, resources), reverse=True)
-        #print([p.compute_score(rewards, machine_usage, resources) for p in pop_sorted])
+        '''if i % 20 == 0:
+            pop_sorted = sorted(population, key=lambda x: x.compute_score(rewards, machine_usage, resources), reverse=True)
+            print([p.compute_score(rewards, machine_usage, resources) for p in pop_sorted])'''
         # track statistics
         iters = i
         

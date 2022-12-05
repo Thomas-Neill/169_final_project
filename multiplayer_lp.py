@@ -92,6 +92,7 @@ if __name__ == '__main__':
 
     (vars, inst2) = gen_instance(players, 100)
 
+    print("\nSimulated Annealing\n")
     soln2 = solve_multiplayer_sim_anneal(inst2, soln, 8000, 2000)
 
     scores = [0] * Np
@@ -107,9 +108,9 @@ if __name__ == '__main__':
     print("\nGenetic Algorithm\n")
     soln3, _ = genetic_algorithm.solve_multiplayer_lp_genetic(
         inst2,
-        max_population_size=100,
+        max_population_size=300,
         keep_top_k=20,
-        max_iters=100,
+        max_iters=400,
         mutation_rate=0.05,
         starting_solution=soln
     )
