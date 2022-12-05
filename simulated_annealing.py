@@ -1,5 +1,5 @@
 import random
-import math
+import math 
 import numpy as np
 
 # Get neighbor of current solution (X) by changing one variable assignment (0 -> 1 or vice versa)

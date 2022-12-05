@@ -1,5 +1,5 @@
 from collections import namedtuple
-
+ 
 resource_types = 'OURBGYW'
 
 Converter = namedtuple('Converter', ['name', 'inputs', 'output'])
