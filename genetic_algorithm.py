@@ -6,14 +6,15 @@ import time
 class Genome: 
     __genes: typing.List[int]
     
-    def __init__(self, genome_size: int, genes: typing.List[int] = []):
-        self.__genes: typing.List[int] = genes if genes else [random.randint(0, 1) for _ in range(genome_size)]
+    def __init__(self, genome_size: int, genes: typing.List[int] = [], is_binary: bool = True):
+        self.__genes: typing.List[int] = genes if genes else [random.randint(0, 1) if is_binary else random.randint(-1, 1) for _ in range(genome_size)]
+        self.__is_binary = is_binary
         # check for programmer error
         if genes:
             assert len(genes) == genome_size, "genome size does not match passed in genes!"
         
     def get_usage_from_genes(self): #-> np.ndarray(float)
-        return np.array([float(gene % 2) for gene in self.__genes])
+        return np.array([float(gene % 2) if self.__is_binary else gene for gene in self.__genes])
         
     def compute_score(self, rewards, machine_usage, resources) -> float:
         """compute a final score for this genome and reward."""
@@ -22,13 +23,9 @@ class Genome:
         # compute initial score
         score: int = np.dot(usage, rewards)
         # check constraint violation
-        resource_usage: np.array = np.dot(machine_usage, usage)
-        for i in range(resources.shape[0]):
-            used, max = resource_usage[0, i], resources[i]
-            if used > max:
-                #print(f"resource_usage={resource_usage[i]} > resources={resources[i]}")
-                score = 0
-                break
+        constraints_satisfied = np.all(np.dot(machine_usage, usage) <= resources)
+        if not constraints_satisfied:
+            score = 0.0
     
         return score
 
@@ -40,6 +37,12 @@ class Genome:
         
     def get_gene(self, index: int) -> int:
         return self.__genes[index]
+    
+    def mutate_gene_at(self, index: int) -> None:
+        if self.__is_binary:
+            self.__genes[index] = 1 - self.__genes[index]
+        else:
+            self.__genes[index] += random.randint(-1, 1)
 
     def __len__(self) -> int:
         return len(self.__genes)
@@ -68,7 +71,7 @@ def two_point_crossover(parent1: Genome, parent2: Genome) -> Genome:
         point1, point2 = point2, point1
     # do crossover
     child_genes: typing.List[int] = parent1.get_genes()[:point1] + parent2.get_genes()[point1:point2] + parent1.get_genes()[point2:]
-    return Genome(genome_size=genome_size, genes=child_genes)
+    return Genome(genome_size=genome_size, genes=child_genes, is_binary=parent1._Genome__is_binary)
 
 def crossover(parents: typing.List[typing.Tuple[Genome, Genome]], population_size: int) -> typing.List[Genome]:
     """Creates a new population using crossover of selected parents."""
@@ -90,11 +93,17 @@ def mutate(children: typing.List[Genome], mutation_rate: float) -> typing.List[G
         for i in range(len(child)):
             if random.random() < mutation_rate:
                 # bit flip on mutation
-                child.set_gene(i, ~child.get_gene(i))
+                child.mutate_gene_at(i)
         
     return children
 
-def __solver(instance, max_population_size: int, keep_top_k: int, max_iters: int, mutation_rate: float):
+def __solver(
+    instance, 
+    max_population_size: int, 
+    keep_top_k: int, 
+    max_iters: int, 
+    mutation_rate: float,
+    starting_solutions = None):
     """genetic algorithm solver for the single player lp. Algorithm adapted from K&W Algorithm 9.4."""
     
     # dictionary to hold statistics of optimization run
@@ -103,7 +112,14 @@ def __solver(instance, max_population_size: int, keep_top_k: int, max_iters: int
     start_time = time.time()
     rewards, machine_usage, resources = instance
     # create an initial population
-    population = [Genome(genome_size=machine_usage.shape[1]) for _ in range(max_population_size)]
+    population: typing.List[Genome] = []
+    if starting_solutions is None:
+        population = [Genome(genome_size=machine_usage.shape[1]) for _ in range(max_population_size)]
+    else:
+        for _ in range(max_population_size):
+            genes: typing.List[int] = [v for v in starting_solutions]
+            genes += [random.randint(-1, 1) for _ in range(machine_usage.shape[1] - len(starting_solutions))]
+            population.append(Genome(genome_size=machine_usage.shape[1], genes=genes, is_binary=False))
     iters = 0
     prev_mean_score = 0
     prev_best_score = 0
@@ -124,6 +140,9 @@ def __solver(instance, max_population_size: int, keep_top_k: int, max_iters: int
         children = crossover(parents=parents, population_size=max_population_size)
         # mutate
         population = mutate(children, mutation_rate=mutation_rate)
+        
+        pop_sorted = sorted(population, key=lambda x: x.compute_score(rewards, machine_usage, resources), reverse=True)
+        print([p.compute_score(rewards, machine_usage, resources) for p in pop_sorted])
         # track statistics
         iters = i
         
@@ -137,6 +156,7 @@ def __solver(instance, max_population_size: int, keep_top_k: int, max_iters: int
         prev_best_score = best_score
     
     best: Genome = sorted(population, key=lambda x: x.compute_score(rewards, machine_usage, resources), reverse=True)[0]
+    
     elapsed_time = time.time() - start_time
     
     statistics = { 
@@ -152,6 +172,6 @@ def __solver(instance, max_population_size: int, keep_top_k: int, max_iters: int
 def solve_singleplayer_lp_genetic(instance, max_population_size: int, keep_top_k: int, max_iters: int, mutation_rate: float): #-> np.ndarray[float]
     return __solver(instance, max_population_size, keep_top_k, max_iters, mutation_rate)
 
-def solve_multiplayer_lp_genetic(instance, max_population_size: int, keep_top_k: int, max_iters: int, mutation_rate: float): #-> np.ndarray[float]
+def solve_multiplayer_lp_genetic(instance, max_population_size: int, keep_top_k: int, max_iters: int, mutation_rate: float, starting_solution): #-> np.ndarray[float]
     """genetic algorithm solver for the multiplayer lp. Algorithm adapted from K&W Algorithm 9.4."""
-    assert False, "not implemented"
+    return __solver(instance, max_population_size, keep_top_k, max_iters, mutation_rate, starting_solutions=starting_solution)

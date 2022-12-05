@@ -3,6 +3,7 @@ import converters
 import solve_lp
 import singleplayer_lp
 from simulated_annealing import * 
+import genetic_algorithm
 
 def singleplayer_opt(player):
     inst = singleplayer_lp.gen_instance(*player)
@@ -96,7 +97,6 @@ if __name__ == '__main__':
 
     soln2 = solve_multiplayer_sim_anneal(inst2, soln, 8000, 2000)
 
-
     scores = [0] * Np
     for x,v in zip(soln2,vars):
         if len(v) == 2 and x > 0:
@@ -106,5 +106,28 @@ if __name__ == '__main__':
         #    print("!!!")
     print(scores0, sum(scores0))
     print(scores, sum(scores))
+    
+    print("\nGenetic Algorithm\n")
+    soln3, _ = genetic_algorithm.solve_multiplayer_lp_genetic(
+        inst2,
+        max_population_size=100,
+        keep_top_k=20,
+        max_iters=1000,
+        mutation_rate=0.1,
+        starting_solution=soln
+    )
+    
+    if soln3 is not None:
+        scores = [0] * Np
+        for x,v in zip(soln3,vars):
+            if len(v) == 2 and x > 0:
+                #print(v, x)
+                scores[v[0]] += v[1].output*x
+            #if len(v) == 3 and x > 0:
+            #    print("!!!")
+        print(scores0, sum(scores0))
+        print(scores, sum(scores))
+    else:
+        print("failed to find solution...")
     
 
