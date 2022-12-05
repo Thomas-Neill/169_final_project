@@ -2,7 +2,7 @@ import numpy as np
 import converters
 import solve_lp
 import singleplayer_lp
-from simulated_annealing import *
+from simulated_annealing import * 
 
 def singleplayer_opt(player):
     inst = singleplayer_lp.gen_instance(*player)
