@@ -3,7 +3,7 @@ import random
 import numpy as np
 import time
 
-class Genome:
+class Genome: 
     __genes: typing.List[int]
     
     def __init__(self, genome_size: int, genes: typing.List[int] = []):
