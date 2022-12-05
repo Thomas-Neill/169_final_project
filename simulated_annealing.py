@@ -32,6 +32,8 @@ def solve_sim_anneal(instance, init_temp, max_iter, get_neighbor,  X_start = Non
     best_X, best_score = X, score
     old_best_score = score
 
+    best_score_over_time = []
+
     while iter_count < max_iter:
         new_X = get_neighbor(X.copy())
         # continue process only if the neighbor solution is feasible; otherwise continue with iterations
@@ -51,9 +53,10 @@ def solve_sim_anneal(instance, init_temp, max_iter, get_neighbor,  X_start = Non
 
         conv = abs(best_score - old_best_score)
         old_best_score = best_score
+        best_score_over_time.append(best_score)
     
     if not return_stats:
-        return best_X
+        return best_X, best_score_over_time
     return best_score, conv, iter_count
 
 def solve_singleplayer_sim_anneal(instance, init_temp=8000, max_iter=2000, return_stats = False):

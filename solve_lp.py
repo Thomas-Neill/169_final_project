@@ -22,8 +22,8 @@ if __name__ == '__main__':
     import instance_gen
     import singleplayer_lp
     import converters
-    convs = instance_gen.gen_converters(7,7,7)
-    ress = instance_gen.gen_resources(5)
+    convs = instance_gen.gen_converters(4,3,2)
+    ress = instance_gen.gen_resources(10)
 
     inst = singleplayer_lp.gen_instance(convs,ress)
     
@@ -97,12 +97,17 @@ if __name__ == '__main__':
     # simulated annealing
     # =================
     
-    solution_sim_anneal = solve_singleplayer_sim_anneal(inst, init_temp=8000, max_iter=2000)
+    solution_SA, best_score_over_time_SA = solve_singleplayer_sim_anneal(inst, init_temp=8000, max_iter=2000, return_stats=False)
 
     print("\nSimulated Annealing Solution\n")
-    for i,x in enumerate(solution_sim_anneal):
+    for i,x in enumerate(solution_SA):
         if x:
             print("Used:", convs[i])
-    print("Score:",np.dot(solution_sim_anneal, inst[0]))
+    print("Score:",np.dot(solution_SA, inst[0]))
+
+    if SHOW_PLOTS:
+        plt.plot(list(range(len(best_score_over_time_SA))), best_score_over_time_SA)
+        plt.title("best score over time")
+        plt.show()
         
     # =================
