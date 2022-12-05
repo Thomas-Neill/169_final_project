@@ -5,7 +5,7 @@ from simulated_annealing import *
 from solve_lp import *
 import statistics
 N_TESTS = 10
-N_PLAYERS = 2
+N_PLAYERS = 3
 
 def genetic(inst):
     solution, statistics = solve_singleplayer_lp_genetic(
@@ -17,12 +17,13 @@ def genetic(inst):
         )
     return solution @ inst[0], statistics["convergence"], statistics["iterations"]
 
-def simulated(inst0, inst1, inst20, X0):
+def simulated(inst0, inst2, inst20, X0):
     return solve_multiplayer_sim_anneal(inst20, X0, init_temp=8000, max_iter=2000, return_stats=True)
 
-def gnulptk(inst0, inst1, inst10, _ignore):
-    if len(inst0[0]) <= 40:
-        return cvxpy_solve(inst1)@inst0[0], -1, -1
+def gnulptk(inst0, inst2, inst20, _ignore):
+    print(len(inst0[0]))
+    if len(inst0[0]) <= 200:
+        return cvxpy_solve(inst2)@inst0[0], -1, -1
     return cvxpy_solve(inst0)@inst0[0], -1, -1
 
 solvers = [("simulated", simulated), ('cvxpy', gnulptk)]
@@ -38,13 +39,13 @@ for t in range(N_TESTS):
     X0 = cvxpy_solve(inst0)
     base_scores = inst0[0] @ X0
 
-    inst1 = multiplayer_lp.gen_instance(players, 1)[1]
+    inst2 = multiplayer_lp.gen_instance(players, 2)[1]
     inst20 = multiplayer_lp.gen_instance(players, 20)[1]
 
     for solver,solverframe in solvers:
         print(solver)
         t0 = time.time()
-        score, convergence, iterations = solverframe(inst0, inst1, inst20, X0)
+        score, convergence, iterations = solverframe(inst0, inst2, inst20, X0)
         t1 = time.time()
         results[solver].append((score - base_scores, convergence, t1-t0, iterations))
     #print(results)
