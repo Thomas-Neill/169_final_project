@@ -112,8 +112,8 @@ if __name__ == '__main__':
         inst2,
         max_population_size=100,
         keep_top_k=20,
-        max_iters=1000,
-        mutation_rate=0.1,
+        max_iters=100,
+        mutation_rate=0.05,
         starting_solution=soln
     )
     

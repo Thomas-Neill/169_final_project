@@ -23,9 +23,15 @@ class Genome:
         # compute initial score
         score: int = np.dot(usage, rewards)
         # check constraint violation
-        constraints_satisfied = np.all(np.dot(machine_usage, usage) <= resources)
+        check_constraints = np.dot(machine_usage, usage)
+        constraints_satisfied = np.all(check_constraints <= resources)
         if not constraints_satisfied:
             score = 0.0
+            # punish for every constraint violated
+            for i in range(resources.shape[0]):
+                used, max = check_constraints[0, i], resources[i]
+                if used > max:
+                    score -= abs(used - max)
     
         return score
 
