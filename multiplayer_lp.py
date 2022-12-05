@@ -4,6 +4,7 @@ import solve_lp
 import singleplayer_lp
 from simulated_annealing import * 
 import genetic_algorithm
+import matplotlib.pyplot as plt
 
 def singleplayer_opt(player):
     inst = singleplayer_lp.gen_instance(*player)
@@ -106,14 +107,16 @@ if __name__ == '__main__':
     print(scores, sum(scores))
     
     print("\nGenetic Algorithm\n")
-    MAX_POP = 100
-    KEEP = math.floor(MAX_POP * (1/25))
+    GA_MAX_ITERS = 100
+    MAX_POP = 1000
+    KEEP = math.ceil(MAX_POP * (1/100))
     MUTATION_RATE = 0.01#1 / (inst2[1].shape[0] * inst2[1].shape[1])
-    soln3, _ = genetic_algorithm.solve_multiplayer_lp_genetic(
+    SHOW_GA_PLOTS = True
+    soln3, statistics = genetic_algorithm.solve_multiplayer_lp_genetic(
         inst2,
         max_population_size=MAX_POP,
         keep_top_k=KEEP,
-        max_iters=100,
+        max_iters=GA_MAX_ITERS,
         mutation_rate=MUTATION_RATE,
         starting_solution=soln
     )
@@ -128,6 +131,24 @@ if __name__ == '__main__':
             #    print("!!!")
         print(scores0, sum(scores0))
         print(scores, sum(scores))
+        
+        if SHOW_GA_PLOTS:
+            plt.subplot(2, 2, 1)
+            # plot convergence over time
+            plt.plot([i for i in range(GA_MAX_ITERS)], statistics["mean_convergence_over_time"])
+            plt.title("Mean convergence over time")
+            
+            # plot mean score over time
+            plt.subplot(2, 2, 2)
+            plt.plot([i for i in range(GA_MAX_ITERS)], statistics["mean_score_over_time"])
+            plt.title("Mean score over time")
+            
+             # plot best score over time
+            plt.subplot(2, 2, 3)
+            plt.plot([i for i in range(GA_MAX_ITERS)], statistics["best_score_over_time"])
+            plt.title("Best Score Over Time")
+            
+            plt.show()
     else:
         print("failed to find solution...")
     

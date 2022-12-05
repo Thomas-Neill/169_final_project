@@ -83,7 +83,7 @@ if __name__ == '__main__':
              # plot best score over time
             plt.subplot(2, 2, 3)
             plt.plot([i for i in range(GA_MAX_ITERS)], statistics["best_score_over_time"])
-            plt.title("best score over time")
+            plt.title("Best Score Over Time")
             
             plt.show()
             
