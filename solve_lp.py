@@ -17,6 +17,18 @@ def cvxpy_solve(instance):
     # uses Gomory's mixed integer cuts method plus branch and bound.
     return x.value
 
+def cvxpy_dual(instance):
+    R, A, b = instance
+    A = A[:-9]
+    b = b[:-9]
+    y = cp.Variable(len(b))
+    objective = cp.Minimize(y @ b)
+    constraint = np.transpose(A)@y >= R
+    problem = cp.Problem(objective, [constraint, y >= 0])
+
+    problem.solve()
+    return y.value
+
 
 if __name__ == '__main__':
     import instance_gen
@@ -31,11 +43,19 @@ if __name__ == '__main__':
     solution = cvxpy_solve(inst)
     if solution is not None:
         print(ress)
+        print(convs)
         print(solution)
         for i,x in enumerate(solution):
             if x:
                 print("Used:", convs[i])
         print("Score:",np.dot(solution, inst[0]))
+
+    print('==== dual values ====')
+    dual = cvxpy_dual(inst)
+    print("Score upper-bound", dual @ inst[2][:-9])
+    print(list(zip(list(converters.resource_types) + convs, dual)))
+
+    
     
     # =================
     # genetic algorithm
